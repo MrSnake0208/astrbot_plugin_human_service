@@ -75,6 +75,7 @@ class HumanServicePlugin(Star):
         self.enable_silence_mode = config.get("enable_silence_mode", False)
         self.message_prefix = config.get("message_prefix", "")
         self.message_suffix = config.get("message_suffix", "")
+        self.enable_reply_identifier = config.get("enable_reply_identifier", False)
         self.enable_random_reply = config.get("enable_random_reply", False)
         self.random_reply_chars = config.get("random_reply_chars", "哈基米")
         
@@ -374,6 +375,7 @@ class HumanServicePlugin(Star):
                     "servicer_id": "",
                     "status": "waiting",
                     "group_id": group_id,
+                    "user_name": send_name,
                 })
                 yield event.plain_result("正在等待客服👤接入...")
                 for servicer_id in self.servicers_id:
@@ -1017,15 +1019,35 @@ class HumanServicePlugin(Star):
         user_id: int | str | None = None,
         add_prefix: bool = False,
         is_from_servicer: bool = False,
+        reply_identifier: bool = False,
+        servicer_id: str = None,
     ):
         """向用户发onebot格式的消息，兼容群聊或私聊"""
         ob_message = await event._parse_onebot_json(
             MessageChain(chain=event.message_obj.message)
         )
-        
+
         # 提取原始文本用于翻译
         original_text = extract_text_from_message(ob_message)
-        
+
+        # 处理回复标识（最优先级，放在最前面）
+        if reply_identifier and self.enable_reply_identifier and is_pure_text_message(ob_message):
+            identifier_prefix = ""
+            if is_from_servicer and servicer_id and user_id:
+                # 客服 -> 用户
+                servicer_name = self.get_servicer_name(servicer_id)
+                session = self.session_manager.get_session(str(user_id))
+                user_name = session.get("user_name", str(user_id)) if session else str(user_id)
+                identifier_prefix = f"客服【{servicer_name}】回复用户【{user_name}】:"
+            elif not is_from_servicer and servicer_id:
+                # 用户 -> 客服
+                sender_name = event.get_sender_name()
+                servicer_name = self.get_servicer_name(servicer_id)
+                identifier_prefix = f"用户【{sender_name}】对客服【{servicer_name}】说:"
+
+            if identifier_prefix:
+                ob_message = add_prefix_to_message(ob_message, identifier_prefix)
+
         # 处理消息（添加前后缀或替换为随机文字）
         if add_prefix and self.enable_random_reply and is_pure_text_message(ob_message):
             # 答非所问模式：替换为随机文字
@@ -1037,13 +1059,13 @@ class HumanServicePlugin(Star):
                     ob_message = add_prefix_to_message(ob_message, self.message_prefix)
                 if self.message_suffix:
                     ob_message = add_suffix_to_message(ob_message, self.message_suffix)
-        
+
         # 先发送主消息
         if group_id and str(group_id) != "0":
             await event.bot.send_group_msg(group_id=int(group_id), message=ob_message)
         elif user_id:
             await event.bot.send_private_msg(user_id=int(user_id), message=ob_message)
-        
+
         # 如果启用了翻译且有文本内容，发送翻译
         if self.enable_translation and original_text and not self.enable_random_reply:
             # 判断翻译方向
@@ -1053,7 +1075,7 @@ class HumanServicePlugin(Star):
             else:
                 # 用户 -> 客服：翻译为主语言
                 target_lang = self.translation_main_language
-            
+
             translation = await self.translate_text(original_text, target_lang)
             if translation and translation != original_text:
                 # 发送翻译

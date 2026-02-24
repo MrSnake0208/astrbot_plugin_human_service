@@ -110,5 +110,11 @@
         "type": "int",
         "default": 120,
         "hint": "在对话即将超时前多少秒提醒。设置为0表示不提醒。仅在设置了对话时间限制时有效"
+    },
+    "enable_reply_identifier": {
+        "description": "启用回复标识",
+        "type": "bool",
+        "default": false,
+        "hint": "启用后在客服回复用户的消息前显示'客服【XX】回复用户【XX】:'标识"
     }
 }

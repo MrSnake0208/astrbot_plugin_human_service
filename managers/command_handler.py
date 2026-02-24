@@ -189,7 +189,8 @@ class CommandHandler:
                 "servicer_id": "",
                 "status": "waiting",
                 "group_id": selection["group_id"],
-                "selected_servicer": selected_servicer_id
+                "selected_servicer": selected_servicer_id,
+                "user_name": selection['name'],
             })
 
             # 检查客服是否在线，离线则累积通知
@@ -246,7 +247,8 @@ class CommandHandler:
             "servicer_id": "",
             "status": "waiting",
             "group_id": next_group_id,
-            "selected_servicer": servicer_id
+            "selected_servicer": servicer_id,
+            "user_name": next_user_name,
         })
         
         # 通知用户

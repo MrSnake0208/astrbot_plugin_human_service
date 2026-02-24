@@ -67,21 +67,21 @@ class MessageRouter:
     async def route_servicer_to_user(self, event, sender_id: str) -> bool:
         """
         路由客服消息到用户
-        
+
         Returns:
             bool: 是否处理了消息
         """
         # 客服 → 用户 (仅私聊生效)
         if not (sender_id in self.plugin.servicers_id and event.is_private_chat()):
             return False
-        
+
         if event.message_str in ("结束对话", "拒绝接入", "导出记录", "翻译测试", "查看黑名单", "拉黑", "取消拉黑", "kfhelp", "上线", "下线"):
             return False
 
         # 处理带参数的 "接入对话" 命令（如：接入对话 123456）
         if event.message_str.startswith("接入对话"):
             return False
-        
+
         for user_id, session in self.plugin.session_map.items():
             if session["servicer_id"] == sender_id and session["status"] == "connected":
                 # 记录聊天内容
@@ -93,30 +93,32 @@ class MessageRouter:
                         "message": event.message_str,
                         "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     })
-                
+
                 await self.plugin.send_ob(
                     event,
                     group_id=session["group_id"],
                     user_id=user_id,
                     add_prefix=True,
                     is_from_servicer=True,
+                    reply_identifier=True,
+                    servicer_id=sender_id,
                 )
                 event.stop_event()
                 return True
-        
+
         return False
     
     async def route_user_to_servicer(self, event, sender_id: str) -> bool:
         """
         路由用户消息到客服
-        
+
         Returns:
             bool: 是否处理了消息
         """
         session = self.plugin.session_map.get(sender_id)
         if not session:
             return False
-        
+
         if session["status"] == "connected":
             # 记录聊天内容
             if self.plugin.enable_chat_history and sender_id in self.plugin.chat_history:
@@ -126,15 +128,17 @@ class MessageRouter:
                     "message": event.message_str,
                     "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 })
-            
+
             await self.plugin.send_ob(
                 event,
                 user_id=session["servicer_id"],
                 add_prefix=False,
                 is_from_servicer=False,
+                reply_identifier=True,
+                servicer_id=session["servicer_id"],
             )
             event.stop_event()
             return True
-        
+
         return False
 
