@@ -151,7 +151,15 @@ class CommandHandler:
             if self.plugin.servicer_status_manager.is_online(selected_servicer_id):
                 await self.plugin.send(
                     event,
-                    message=f"📋 {selection['name']}({sender_id}) 已加入排队（指定您），当前队列：{queue_count} 人",
+                    message=(
+                        f"📋 {selection['name']}({sender_id}) 已加入排队（指定您），当前队列：{queue_count} 人\n"
+                        f"━━━━━━━━━━━━\n"
+                        f"常用指令：\n"
+                        f"/接入对话 {sender_id}\n"
+                        f"/结束对话\n"
+                        f"/上线\n"
+                        f"/下线"
+                    ),
                     user_id=selected_servicer_id,
                 )
             else:
@@ -197,7 +205,15 @@ class CommandHandler:
             if self.plugin.servicer_status_manager.is_online(selected_servicer_id):
                 await self.plugin.send(
                     event,
-                    message=f"{selection['name']}({sender_id}) 请求转人工（指定您）",
+                    message=(
+                        f"{selection['name']}({sender_id}) 请求转人工（指定您）\n"
+                        f"━━━━━━━━━━━━\n"
+                        f"常用指令：\n"
+                        f"/接入对话 {sender_id}\n"
+                        f"/结束对话\n"
+                        f"/上线\n"
+                        f"/下线"
+                    ),
                     user_id=selected_servicer_id,
                 )
             else:
