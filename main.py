@@ -26,6 +26,7 @@ from .managers import (
     TranslationService,
     CommandHandler,
     SilenceModeManager,
+    ServicerStatusManager,
 )
 
 # 导入辅助工具类
@@ -111,7 +112,10 @@ class HumanServicePlugin(Star):
         
         # 活动沉默模式管理器
         self.silence_mode_manager = SilenceModeManager(self.enable_silence_mode, self.servicers_id)
-        
+
+        # 客服状态管理器
+        self.servicer_status_manager = ServicerStatusManager(self.servicers_id)
+
         # 消息路由器
         self.message_router = MessageRouter(self)
         
@@ -159,6 +163,10 @@ class HumanServicePlugin(Star):
         return self.blacklist_manager.remove(user_id, servicer_id)
     
     def is_servicer_busy(self, servicer_id: str) -> bool:
+        """检查客服是否忙碌（在线且正在服务中）"""
+        # 离线客服视为忙碌
+        if not self.servicer_status_manager.is_online(servicer_id):
+            return True
         return self.session_manager.is_servicer_busy(servicer_id)
     
     def add_to_queue(self, servicer_id: str, user_id: str, user_name: str, group_id: str):
@@ -461,6 +469,32 @@ class HumanServicePlugin(Star):
             servicer_name = self.get_servicer_name(sender_id)
             yield event.plain_result(f"✅ 已将用户 {target_id} 加入您的黑名单")
     
+    @filter.command("上线", priority=1)
+    async def set_online(self, event: AiocqhttpMessageEvent):
+        """客服设置自己为在线状态"""
+        sender_id = event.get_sender_id()
+        if sender_id not in self.servicers_id:
+            return
+
+        success = self.servicer_status_manager.set_online(sender_id)
+        if success:
+            yield event.plain_result("✅ 您已设置为在线状态，可以接收用户请求")
+        else:
+            yield event.plain_result("⚠ 设置失败，请联系管理员")
+
+    @filter.command("下线", priority=1)
+    async def set_offline(self, event: AiocqhttpMessageEvent):
+        """客服设置自己为离线状态"""
+        sender_id = event.get_sender_id()
+        if sender_id not in self.servicers_id:
+            return
+
+        success = self.servicer_status_manager.set_offline(sender_id)
+        if success:
+            yield event.plain_result("✅ 您已设置为离线状态，不再接收新的用户请求")
+        else:
+            yield event.plain_result("⚠ 设置失败，请联系管理员")
+
     @filter.command("kfhelp", priority=1)
     async def show_help(self, event: AiocqhttpMessageEvent):
         sender_id = event.get_sender_id()

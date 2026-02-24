@@ -46,16 +46,19 @@ class CommandHandler:
     
     def get_available_servicers(self, sender_id: str) -> List[str]:
         """
-        获取用户可选的客服列表（过滤黑名单）
-        
+        获取用户可选的客服列表（过滤黑名单和离线客服）
+
         Args:
             sender_id: 用户ID
-            
+
         Returns:
             List[str]: 可用客服ID列表
         """
         available = []
         for sid in self.plugin.servicers_id:
+            # 过滤离线客服
+            if not self.plugin.servicer_status_manager.is_online(sid):
+                continue
             # 如果不共用黑名单，检查用户是否被该客服拉黑
             if not self.plugin.share_blacklist and self.plugin.is_user_blacklisted(sender_id, sid):
                 continue
@@ -65,26 +68,34 @@ class CommandHandler:
     def format_servicer_list(self, servicer_ids: List[str]) -> tuple:
         """
         格式化客服列表显示
-        
+
         Args:
             servicer_ids: 客服ID列表
-            
+
         Returns:
             tuple: (list_items, available_servicers)
         """
         servicer_list_items = []
         available_servicers = []
-        
+
         for idx, sid in enumerate(servicer_ids):
             servicer_name = self.plugin.get_servicer_name(sid)
-            status = "🔴 忙碌中" if self.plugin.is_servicer_busy(sid) else "🟢 空闲"
+
+            # 判断客服状态：离线 / 在线忙碌 / 在线空闲
+            if not self.plugin.servicer_status_manager.is_online(sid):
+                status = "⚫ 离线"
+            elif self.plugin.is_servicer_busy(sid):
+                status = "🔴 忙碌中"
+            else:
+                status = "🟢 空闲"
+
             queue_count = self.plugin.queue_manager.get_size(sid)
             queue_info = f"（排队 {queue_count} 人）" if queue_count > 0 else ""
-            
+
             list_idx = len(servicer_list_items) + 1
             servicer_list_items.append(f"{list_idx}. {servicer_name} {status}{queue_info}")
             available_servicers.append(sid)
-        
+
         return servicer_list_items, available_servicers
     
     async def handle_servicer_selection(self, event, sender_id: str, choice: int, selection: Dict):

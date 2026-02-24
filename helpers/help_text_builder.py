@@ -61,6 +61,8 @@ class HelpTextBuilder:
         help_text += "• /接入对话\n  接入用户对话（回复用户消息）\n\n"
         help_text += "• /拒绝接入\n  拒绝用户接入请求\n\n"
         help_text += "• /结束对话\n  结束当前对话\n\n"
+        help_text += "• /上线\n  设置为在线状态（接收用户请求）\n\n"
+        help_text += "• /下线\n  设置为离线状态（不接收新请求）\n\n"
         help_text += "• /拉黑 QQ号\n  拉黑指定用户\n  示例：/拉黑 123456\n\n"
         help_text += "• /取消拉黑 QQ号\n  取消拉黑指定用户\n  示例：/取消拉黑 123456\n\n"
         help_text += "• /查看黑名单\n  查看黑名单列表\n\n"

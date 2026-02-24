@@ -10,6 +10,7 @@ from .timeout_manager import TimeoutManager
 from .translation_service import TranslationService
 from .command_handler import CommandHandler
 from .silence_mode_manager import SilenceModeManager
+from .servicer_status_manager import ServicerStatusManager
 
 __all__ = [
     "QueueManager",
@@ -19,5 +20,6 @@ __all__ = [
     "TranslationService",
     "CommandHandler",
     "SilenceModeManager",
+    "ServicerStatusManager",
 ]
 
