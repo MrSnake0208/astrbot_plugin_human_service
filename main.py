@@ -636,6 +636,10 @@ class HumanServicePlugin(Star):
                 if match := re.search(r"\((\d+)\)", text):
                     target_id = match.group(1)
 
+        # FIX: 确保 target_id 是字符串类型，避免类型不匹配问题
+        if target_id is not None:
+            target_id = str(target_id)
+
         session = self.session_map.get(target_id)
 
         if not session or session["status"] != "waiting":
@@ -686,6 +690,10 @@ class HumanServicePlugin(Star):
             if text := reply_seg.message_str:
                 if match := re.search(r"\((\d+)\)", text):
                     target_id = match.group(1)
+
+        # FIX: 确保 target_id 是字符串类型，避免类型不匹配问题
+        if target_id is not None:
+            target_id = str(target_id)
 
         session = self.session_map.get(target_id)
 
