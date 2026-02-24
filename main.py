@@ -558,9 +558,29 @@ class HumanServicePlugin(Star):
         if sender_id not in self.servicers_id:
             return
 
+        # 检查是否有正在进行的对话
+        current_user_id = self.session_manager.get_user_by_servicer(sender_id)
+        if current_user_id:
+            session = self.session_manager.get_session(current_user_id)
+            # 通知用户对话结束
+            await self.send(
+                event,
+                message="客服已下线，本次对话结束。如需继续咨询，请重新转人工",
+                group_id=session.get("group_id"),
+                user_id=current_user_id,
+            )
+            # 清理会话
+            self.session_manager.delete_session(current_user_id)
+            self.timeout_manager.stop_timer(current_user_id)
+            if current_user_id in self.chat_history:
+                del self.chat_history[current_user_id]
+
         success = self.servicer_status_manager.set_offline(sender_id)
         if success:
-            yield event.plain_result("✅ 您已设置为离线状态，不再接收新的用户请求")
+            if current_user_id:
+                yield event.plain_result(f"✅ 您已设置为离线状态，已结束与用户 {current_user_id} 的对话")
+            else:
+                yield event.plain_result("✅ 您已设置为离线状态，不再接收新的用户请求")
         else:
             yield event.plain_result("⚠ 设置失败，请联系管理员")
 
