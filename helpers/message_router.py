@@ -75,7 +75,11 @@ class MessageRouter:
         if not (sender_id in self.plugin.servicers_id and event.is_private_chat()):
             return False
         
-        if event.message_str in ("接入对话", "结束对话", "拒绝接入", "导出记录", "翻译测试", "查看黑名单", "拉黑", "取消拉黑", "kfhelp", "上线", "下线"):
+        if event.message_str in ("结束对话", "拒绝接入", "导出记录", "翻译测试", "查看黑名单", "拉黑", "取消拉黑", "kfhelp", "上线", "下线"):
+            return False
+
+        # 处理带参数的 "接入对话" 命令（如：接入对话 123456）
+        if event.message_str.startswith("接入对话"):
             return False
         
         for user_id, session in self.plugin.session_map.items():

@@ -2,7 +2,7 @@ import re
 from astrbot.api.event import filter
 from astrbot.api.star import Context, Star, register
 from astrbot.core.config.astrbot_config import AstrBotConfig
-from astrbot.core.message.components import Reply
+from astrbot.core.message.components import Reply, At, Plain
 from astrbot.core.message.message_event_result import MessageChain
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import (
     AiocqhttpMessageEvent,
@@ -793,10 +793,11 @@ class HumanServicePlugin(Star):
         # 生成接入提示
         servicer_name = self.get_servicer_name(sender_id)
         timeout_tip = f"\n⏰ 本次对话限时 {self.conversation_timeout} 秒" if self.conversation_timeout > 0 else ""
-        
+
+        # 发送艾特消息通知用户
         await self.send(
             event,
-            message=f"客服【{servicer_name}】已接入{timeout_tip}",
+            message=MessageChain([At(qq=target_id), Plain(f" 客服【{servicer_name}】已接入{timeout_tip}")]),
             group_id=session["group_id"],
             user_id=target_id,
         )
