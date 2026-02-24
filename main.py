@@ -623,11 +623,18 @@ class HumanServicePlugin(Star):
 
     @filter.command("接入对话", priority=1)
     async def accept_conversation(
-        self, event: AiocqhttpMessageEvent, target_id: str | int | None = None
+        self, event: AiocqhttpMessageEvent, *args, **kwargs
     ):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
             return
+
+        # 从 args 或 kwargs 获取 target_id
+        target_id = None
+        if args:
+            target_id = args[0]
+        elif 'target_id' in kwargs:
+            target_id = kwargs['target_id']
 
         if reply_seg := next(
             (seg for seg in event.get_messages() if isinstance(seg, Reply)), None
@@ -679,10 +686,17 @@ class HumanServicePlugin(Star):
         event.stop_event()
 
     @filter.command("拒绝接入", priority=1)
-    async def reject_conversation(self, event: AiocqhttpMessageEvent, target_id: str | int | None = None):
+    async def reject_conversation(self, event: AiocqhttpMessageEvent, *args, **kwargs):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
             return
+
+        # 从 args 或 kwargs 获取 target_id
+        target_id = None
+        if args:
+            target_id = args[0]
+        elif 'target_id' in kwargs:
+            target_id = kwargs['target_id']
 
         if reply_seg := next(
             (seg for seg in event.get_messages() if isinstance(seg, Reply)), None
@@ -858,7 +872,7 @@ class HumanServicePlugin(Star):
                     await event.bot.send_private_msg(user_id=int(user_id), message=translation_msg)
 
     @filter.event_message_type(filter.EventMessageType.ALL, priority=0)
-    async def silence_mode_filter(self, event: AiocqhttpMessageEvent):
+    async def silence_mode_filter(self, event: AiocqhttpMessageEvent, *args, **kwargs):
         """活动沉默模式拦截器 - 最高优先级"""
         sender_id = event.get_sender_id()
         message_text = event.message_str.strip()
@@ -878,7 +892,7 @@ class HumanServicePlugin(Star):
             return
     
     @filter.event_message_type(filter.EventMessageType.ALL)
-    async def handle_match(self, event: AiocqhttpMessageEvent):
+    async def handle_match(self, event: AiocqhttpMessageEvent, *args, **kwargs):
         """监听对话消息转发和客服选择"""
         # 检查对话和排队超时
         await self.check_conversation_timeout(event)
