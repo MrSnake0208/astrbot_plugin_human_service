@@ -14,8 +14,8 @@ class ServicerStatusManager:
         Args:
             servicer_ids: 客服ID列表
         """
-        # 默认所有客服为在线状态
-        self.status_map = {sid: "online" for sid in servicer_ids}
+        # 默认所有客服为离线状态，需要主动上线
+        self.status_map = {sid: "offline" for sid in servicer_ids}
         # 离线期间的通知累积 {servicer_id: [通知列表]}
         self.pending_notifications = {sid: [] for sid in servicer_ids}
 
@@ -57,9 +57,9 @@ class ServicerStatusManager:
             servicer_id: 客服ID
 
         Returns:
-            bool: 是否在线（默认在线）
+            bool: 是否在线（默认离线）
         """
-        return self.status_map.get(servicer_id, "online") == "online"
+        return self.status_map.get(servicer_id, "offline") == "online"
 
     def get_status(self, servicer_id: str) -> str:
         """
@@ -71,17 +71,17 @@ class ServicerStatusManager:
         Returns:
             str: "online" 或 "offline"
         """
-        return self.status_map.get(servicer_id, "online")
+        return self.status_map.get(servicer_id, "offline")
 
     def add_servicer(self, servicer_id: str):
         """
-        添加新客服（默认为在线状态）
+        添加新客服（默认为离线状态）
 
         Args:
             servicer_id: 客服ID
         """
         if servicer_id not in self.status_map:
-            self.status_map[servicer_id] = "online"
+            self.status_map[servicer_id] = "offline"
             self.pending_notifications[servicer_id] = []
 
     def add_pending_notification(self, servicer_id: str, notification: dict):
@@ -119,7 +119,7 @@ class ServicerStatusManager:
         Returns:
             bool: 是否处于离线模式
         """
-        return self.status_map.get(servicer_id, "online") == "offline"
+        return self.status_map.get(servicer_id, "offline") == "offline"
 
     def has_any_online_servicer(self) -> bool:
         """
