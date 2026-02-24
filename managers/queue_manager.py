@@ -90,14 +90,26 @@ class QueueManager:
     def get_size(self, servicer_id: str) -> int:
         """
         获取队列大小
-        
+
         Args:
             servicer_id: 客服ID
-            
+
         Returns:
             int: 队列中的用户数量
         """
         return len(self.servicer_queue.get(servicer_id, []))
+
+    def get_queue_users(self, servicer_id: str) -> list:
+        """
+        获取指定客服队列中的所有用户信息
+
+        Args:
+            servicer_id: 客服ID
+
+        Returns:
+            list: 用户列表，每个用户包含 user_id, name, group_id, time
+        """
+        return self.servicer_queue.get(servicer_id, []).copy()
     
     def pop_next(self, servicer_id: str) -> Optional[Dict]:
         """

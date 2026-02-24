@@ -529,9 +529,17 @@ class HumanServicePlugin(Star):
                 # 获取当前实际排队状态（因为有些用户可能已经取消）
                 queue_count = self.queue_manager.get_size(sender_id)
                 if queue_count > 0:
+                    # 获取排队用户列表
+                    queue_users = self.queue_manager.get_queue_users(sender_id)
+                    user_list = "\n".join([
+                        f"  {i+1}. {user['name']}({user['user_id']})"
+                        for i, user in enumerate(queue_users)
+                    ])
                     yield event.plain_result(
                         f"✅ 您已上线，当前有 {queue_count} 人在排队\n"
-                        f"💡 离线期间有 {len(pending)} 条未处理请求"
+                        f"💡 离线期间有 {len(pending)} 条未处理请求\n\n"
+                        f"排队用户列表：\n{user_list}\n\n"
+                        f"使用 /接入对话 <QQ号> 接入用户"
                     )
                 else:
                     yield event.plain_result(
