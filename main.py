@@ -1038,7 +1038,7 @@ class HumanServicePlugin(Star):
                 servicer_name = self.get_servicer_name(servicer_id)
                 session = self.session_manager.get_session(str(user_id))
                 user_name = session.get("user_name", str(user_id)) if session else str(user_id)
-                identifier_prefix = f"客服【{servicer_name}】回复用户【{user_name}】:"
+                identifier_prefix = f"客服【{servicer_name}】回复用户【{user_name}】:\n"
             elif not is_from_servicer and servicer_id:
                 # 用户 -> 客服
                 sender_name = event.get_sender_name()
