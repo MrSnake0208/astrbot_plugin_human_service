@@ -934,13 +934,17 @@ class HumanServicePlugin(Star):
         target_language: str = None,
     ):
         """向用户发消息，兼容群聊或私聊"""
-        # 如果需要翻译且启用了翻译功能
+        # 如果需要翻译且启用了翻译功能（仅对字符串消息）
         if need_translation and self.enable_translation and isinstance(message, str):
             translation = await self.translate_text(message, target_language or self.translation_target_language)
             if translation:
                 # 发送原文 + 翻译
                 message = f"{message}\n\n[翻译] {translation}"
-        
+
+        # 如果是 MessageChain，转换为 OneBot JSON 格式
+        if isinstance(message, MessageChain):
+            message = await event._parse_onebot_json(message)
+
         if group_id and str(group_id) != "0":
             await event.bot.send_group_msg(group_id=int(group_id), message=message)
         elif user_id:
