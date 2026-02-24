@@ -622,19 +622,20 @@ class HumanServicePlugin(Star):
             yield event.plain_result(f"⚠ 用户 {target_id} 不在黑名单中")
 
     @filter.command("接入对话", priority=1)
-    async def accept_conversation(
-        self, event: AiocqhttpMessageEvent, *args, **kwargs
-    ):
+    async def accept_conversation(self, event: AiocqhttpMessageEvent, _=None):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
             return
 
-        # 从 args 或 kwargs 获取 target_id
+        # 从消息文本解析参数
+        message_text = event.message_str.strip()
         target_id = None
-        if args:
-            target_id = args[0]
-        elif 'target_id' in kwargs:
-            target_id = kwargs['target_id']
+
+        # 尝试提取命令后的参数
+        if message_text.startswith("/接入对话"):
+            target_id = message_text.replace("/接入对话", "", 1).strip()
+        elif message_text.startswith("接入对话"):
+            target_id = message_text.replace("接入对话", "", 1).strip()
 
         if reply_seg := next(
             (seg for seg in event.get_messages() if isinstance(seg, Reply)), None
@@ -686,17 +687,20 @@ class HumanServicePlugin(Star):
         event.stop_event()
 
     @filter.command("拒绝接入", priority=1)
-    async def reject_conversation(self, event: AiocqhttpMessageEvent, *args, **kwargs):
+    async def reject_conversation(self, event: AiocqhttpMessageEvent, _=None):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
             return
 
-        # 从 args 或 kwargs 获取 target_id
+        # 从消息文本解析参数
+        message_text = event.message_str.strip()
         target_id = None
-        if args:
-            target_id = args[0]
-        elif 'target_id' in kwargs:
-            target_id = kwargs['target_id']
+
+        # 尝试提取命令后的参数
+        if message_text.startswith("/拒绝接入"):
+            target_id = message_text.replace("/拒绝接入", "", 1).strip()
+        elif message_text.startswith("拒绝接入"):
+            target_id = message_text.replace("拒绝接入", "", 1).strip()
 
         if reply_seg := next(
             (seg for seg in event.get_messages() if isinstance(seg, Reply)), None
@@ -872,7 +876,7 @@ class HumanServicePlugin(Star):
                     await event.bot.send_private_msg(user_id=int(user_id), message=translation_msg)
 
     @filter.event_message_type(filter.EventMessageType.ALL, priority=0)
-    async def silence_mode_filter(self, event: AiocqhttpMessageEvent, *args, **kwargs):
+    async def silence_mode_filter(self, event: AiocqhttpMessageEvent):
         """活动沉默模式拦截器 - 最高优先级"""
         sender_id = event.get_sender_id()
         message_text = event.message_str.strip()
@@ -892,7 +896,7 @@ class HumanServicePlugin(Star):
             return
     
     @filter.event_message_type(filter.EventMessageType.ALL)
-    async def handle_match(self, event: AiocqhttpMessageEvent, *args, **kwargs):
+    async def handle_match(self, event: AiocqhttpMessageEvent):
         """监听对话消息转发和客服选择"""
         # 检查对话和排队超时
         await self.check_conversation_timeout(event)
