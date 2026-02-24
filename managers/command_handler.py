@@ -147,12 +147,25 @@ class CommandHandler:
             position = self.plugin.get_queue_position(selected_servicer_id, sender_id)
             queue_count = self.plugin.queue_manager.get_size(selected_servicer_id)
             
-            # 通知客服有人排队
-            await self.plugin.send(
-                event,
-                message=f"📋 {selection['name']}({sender_id}) 已加入排队（指定您），当前队列：{queue_count} 人",
-                user_id=selected_servicer_id,
-            )
+            # 检查客服是否在线，离线则累积通知
+            if self.plugin.servicer_status_manager.is_online(selected_servicer_id):
+                await self.plugin.send(
+                    event,
+                    message=f"📋 {selection['name']}({sender_id}) 已加入排队（指定您），当前队列：{queue_count} 人",
+                    user_id=selected_servicer_id,
+                )
+            else:
+                # 客服离线，累积通知
+                self.plugin.servicer_status_manager.add_pending_notification(
+                    selected_servicer_id,
+                    {
+                        "user_id": sender_id,
+                        "name": selection['name'],
+                        "group_id": selection.get('group_id', '0'),
+                        "type": "queue_join",
+                        "timestamp": event.timestamp if hasattr(event, 'timestamp') else None
+                    }
+                )
             
             # 返回消息让调用者yield
             message = (
@@ -170,14 +183,27 @@ class CommandHandler:
                 "group_id": selection["group_id"],
                 "selected_servicer": selected_servicer_id
             })
-            
-            # 通知客服
-            await self.plugin.send(
-                event,
-                message=f"{selection['name']}({sender_id}) 请求转人工（指定您）",
-                user_id=selected_servicer_id,
-            )
-            
+
+            # 检查客服是否在线，离线则累积通知
+            if self.plugin.servicer_status_manager.is_online(selected_servicer_id):
+                await self.plugin.send(
+                    event,
+                    message=f"{selection['name']}({sender_id}) 请求转人工（指定您）",
+                    user_id=selected_servicer_id,
+                )
+            else:
+                # 客服离线，累积通知
+                self.plugin.servicer_status_manager.add_pending_notification(
+                    selected_servicer_id,
+                    {
+                        "user_id": sender_id,
+                        "name": selection['name'],
+                        "group_id": selection.get('group_id', '0'),
+                        "type": "human_request",
+                        "timestamp": event.timestamp if hasattr(event, 'timestamp') else None
+                    }
+                )
+
             # 返回消息让调用者yield
             message = f"正在等待客服【{selected_servicer_name}】接入..."
             return True, True, message, False
@@ -185,15 +211,19 @@ class CommandHandler:
     async def prepare_next_user_from_queue(self, event, servicer_id: str, context_message: str = ""):
         """
         从队列准备下一位用户
-        
+
         Args:
             event: 事件对象
             servicer_id: 客服ID
             context_message: 上下文消息（如"对话已结束"）
-            
+
         Returns:
             bool: 是否有下一位用户
         """
+        # 检查客服是否在线，离线时不通知客服
+        if not self.plugin.servicer_status_manager.is_online(servicer_id):
+            return False
+
         next_user = self.plugin.queue_manager.pop_next(servicer_id)
         
         if not next_user:

@@ -16,6 +16,8 @@ class ServicerStatusManager:
         """
         # 默认所有客服为在线状态
         self.status_map = {sid: "online" for sid in servicer_ids}
+        # 离线期间的通知累积 {servicer_id: [通知列表]}
+        self.pending_notifications = {sid: [] for sid in servicer_ids}
 
     def set_online(self, servicer_id: str) -> bool:
         """
@@ -80,3 +82,41 @@ class ServicerStatusManager:
         """
         if servicer_id not in self.status_map:
             self.status_map[servicer_id] = "online"
+            self.pending_notifications[servicer_id] = []
+
+    def add_pending_notification(self, servicer_id: str, notification: dict):
+        """
+        添加离线通知
+
+        Args:
+            servicer_id: 客服ID
+            notification: 通知内容字典，包含 user_id, name, group_id, timestamp, type 等信息
+        """
+        if servicer_id in self.pending_notifications:
+            self.pending_notifications[servicer_id].append(notification)
+
+    def get_and_clear_pending(self, servicer_id: str) -> list:
+        """
+        获取并清空离线通知列表
+
+        Args:
+            servicer_id: 客服ID
+
+        Returns:
+            list: 离线期间累积的通知列表
+        """
+        notifications = self.pending_notifications.get(servicer_id, [])
+        self.pending_notifications[servicer_id] = []
+        return notifications
+
+    def is_in_offline_mode(self, servicer_id: str) -> bool:
+        """
+        检查客服是否处于离线模式（即是否离线）
+
+        Args:
+            servicer_id: 客服ID
+
+        Returns:
+            bool: 是否处于离线模式
+        """
+        return self.status_map.get(servicer_id, "online") == "offline"

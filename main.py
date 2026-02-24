@@ -326,12 +326,26 @@ class HumanServicePlugin(Star):
                     f"您的位置：第 {position} 位\n\n"
                     f"💡 使用 /取消排队 可退出队列"
                 )
-                
-                await self.send(
-                    event,
-                    message=f"📋 {send_name}({sender_id}) 已加入排队，当前队列：{queue_count} 人",
-                    user_id=target_servicer,
-                )
+
+                # 检查客服是否在线，离线则累积通知
+                if self.servicer_status_manager.is_online(target_servicer):
+                    await self.send(
+                        event,
+                        message=f"📋 {send_name}({sender_id}) 已加入排队，当前队列：{queue_count} 人",
+                        user_id=target_servicer,
+                    )
+                else:
+                    # 客服离线，累积通知
+                    self.servicer_status_manager.add_pending_notification(
+                        target_servicer,
+                        {
+                            "user_id": sender_id,
+                            "name": send_name,
+                            "group_id": group_id,
+                            "type": "queue_join",
+                            "timestamp": event.timestamp if hasattr(event, "timestamp") else None
+                        }
+                    )
             else:
                 # 客服空闲，创建会话
                 self.session_manager.create_session(sender_id, {
@@ -341,11 +355,25 @@ class HumanServicePlugin(Star):
                 })
                 yield event.plain_result("正在等待客服👤接入...")
                 for servicer_id in self.servicers_id:
-                    await self.send(
-                        event,
-                        message=f"{send_name}({sender_id}) 请求转人工",
-                        user_id=servicer_id,
-                    )
+                    # 只通知在线客服，离线客服的消息累积到上线时发送
+                    if self.servicer_status_manager.is_online(servicer_id):
+                        await self.send(
+                            event,
+                            message=f"{send_name}({sender_id}) 请求转人工",
+                            user_id=servicer_id,
+                        )
+                    else:
+                        # 客服离线，累积通知
+                        self.servicer_status_manager.add_pending_notification(
+                            servicer_id,
+                            {
+                                "user_id": sender_id,
+                                "name": send_name,
+                                "group_id": group_id,
+                                "type": "human_request",
+                                "timestamp": event.timestamp if hasattr(event, "timestamp") else None
+                            }
+                        )
 
     @filter.command("转人机", priority=1)
     async def transfer_to_bot(self, event: AiocqhttpMessageEvent):
@@ -374,13 +402,14 @@ class HumanServicePlugin(Star):
             # 用户在等待状态取消请求
             del self.session_map[sender_id]
             yield event.plain_result("已取消人工客服请求，我现在是人机啦！")
-            # 通知所有客服人员该用户已取消请求
+            # 只通知在线客服，离线客服不接收通知
             for servicer_id in self.servicers_id:
-                await self.send(
-                    event,
-                    message=f"❗{sender_name}({sender_id}) 已取消人工请求",
-                    user_id=servicer_id,
-                )
+                if self.servicer_status_manager.is_online(servicer_id):
+                    await self.send(
+                        event,
+                        message=f"❗{sender_name}({sender_id}) 已取消人工请求",
+                        user_id=servicer_id,
+                    )
         elif session["status"] == "connected":
             # 用户在对话中结束会话
             servicer_name = self.get_servicer_name(session["servicer_id"])
@@ -478,7 +507,25 @@ class HumanServicePlugin(Star):
 
         success = self.servicer_status_manager.set_online(sender_id)
         if success:
-            yield event.plain_result("✅ 您已设置为在线状态，可以接收用户请求")
+            # 获取离线期间累积的通知
+            pending = self.servicer_status_manager.get_and_clear_pending(sender_id)
+
+            # 批量发送排队通知
+            if pending:
+                # 获取当前实际排队状态（因为有些用户可能已经取消）
+                queue_count = self.queue_manager.get_size(sender_id)
+                if queue_count > 0:
+                    yield event.plain_result(
+                        f"✅ 您已上线，当前有 {queue_count} 人在排队\n"
+                        f"💡 离线期间有 {len(pending)} 条未处理请求"
+                    )
+                else:
+                    yield event.plain_result(
+                        f"✅ 您已上线，当前队列空闲\n"
+                        f"💡 离线期间有 {len(pending)} 条未处理请求（用户可能已取消）"
+                    )
+            else:
+                yield event.plain_result("✅ 您已设置为在线状态，可以接收用户请求")
         else:
             yield event.plain_result("⚠ 设置失败，请联系管理员")
 
