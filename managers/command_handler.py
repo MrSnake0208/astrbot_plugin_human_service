@@ -167,13 +167,21 @@ class CommandHandler:
                     }
                 )
             
-            # 返回消息让调用者yield
-            message = (
-                f"客服【{selected_servicer_name}】正在服务中🔴\n"
-                f"您已加入等待队列，当前排队人数：{queue_count}\n"
-                f"您的位置：第 {position} 位\n\n"
-                f"💡 使用 /取消排队 可退出队列"
-            )
+            # 判断指定客服是否离线，给用户不同的提示
+            if not self.plugin.servicer_status_manager.is_online(selected_servicer_id):
+                message = (
+                    f"客服【{selected_servicer_name}】目前不在线哦\n"
+                    f"您已加入等待队列，当前排队人数：{queue_count}\n"
+                    f"您的位置：第 {position} 位\n\n"
+                    f"💡 使用 /取消排队 可退出队列"
+                )
+            else:
+                message = (
+                    f"客服【{selected_servicer_name}】正在服务中🔴\n"
+                    f"您已加入等待队列，当前排队人数：{queue_count}\n"
+                    f"您的位置：第 {position} 位\n\n"
+                    f"💡 使用 /取消排队 可退出队列"
+                )
             return True, True, message, True
         else:
             # 客服空闲，创建会话

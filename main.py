@@ -292,7 +292,12 @@ class HumanServicePlugin(Star):
         if self.enable_servicer_selection and len(self.servicers_id) > 1:
             # 获取可用客服并格式化列表
             available_servicers = self.command_handler.get_available_servicers(sender_id)
-            
+
+            # 检查是否所有客服都离线
+            if not self.servicer_status_manager.has_any_online_servicer():
+                yield event.plain_result("目前没有客服在线哦")
+                return
+
             if not available_servicers:
                 yield event.plain_result("⚠ 当前没有可用的客服")
                 return
@@ -319,13 +324,22 @@ class HumanServicePlugin(Star):
                 self.add_to_queue(target_servicer, sender_id, send_name, group_id)
                 position = self.get_queue_position(target_servicer, sender_id)
                 queue_count = self.queue_manager.get_size(target_servicer)
-                
-                yield event.plain_result(
-                    f"客服正在服务中🔴\n"
-                    f"您已加入等待队列，当前排队人数：{queue_count}\n"
-                    f"您的位置：第 {position} 位\n\n"
-                    f"💡 使用 /取消排队 可退出队列"
-                )
+
+                # 判断客服是否离线，给用户不同的提示
+                if not self.servicer_status_manager.is_online(target_servicer):
+                    yield event.plain_result(
+                        f"目前没有客服在线哦\n"
+                        f"您已加入等待队列，当前排队人数：{queue_count}\n"
+                        f"您的位置：第 {position} 位\n\n"
+                        f"💡 使用 /取消排队 可退出队列"
+                    )
+                else:
+                    yield event.plain_result(
+                        f"客服正在服务中🔴\n"
+                        f"您已加入等待队列，当前排队人数：{queue_count}\n"
+                        f"您的位置：第 {position} 位\n\n"
+                        f"💡 使用 /取消排队 可退出队列"
+                    )
 
                 # 检查客服是否在线，离线则累积通知
                 if self.servicer_status_manager.is_online(target_servicer):

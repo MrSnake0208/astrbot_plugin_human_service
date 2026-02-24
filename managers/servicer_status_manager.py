@@ -120,3 +120,12 @@ class ServicerStatusManager:
             bool: 是否处于离线模式
         """
         return self.status_map.get(servicer_id, "online") == "offline"
+
+    def has_any_online_servicer(self) -> bool:
+        """
+        检查是否有任何在线的客服
+
+        Returns:
+            bool: 是否有任何客服在线
+        """
+        return any(status == "online" for status in self.status_map.values())
