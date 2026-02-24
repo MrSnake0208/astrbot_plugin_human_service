@@ -471,7 +471,11 @@ class HumanServicePlugin(Star):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
             return
-        
+
+        # 检查是否为私聊
+        if not event.is_private_chat():
+            return
+
         # 获取命令参数（AstrBot会自动移除命令部分）
         # 尝试多种方式获取参数
         message_text = event.message_str.strip()
@@ -519,6 +523,10 @@ class HumanServicePlugin(Star):
         if sender_id not in self.servicers_id:
             return
 
+        # 检查是否为私聊
+        if not event.is_private_chat():
+            return
+
         success = self.servicer_status_manager.set_online(sender_id)
         if success:
             # 获取离线期间累积的通知
@@ -558,6 +566,10 @@ class HumanServicePlugin(Star):
         if sender_id not in self.servicers_id:
             return
 
+        # 检查是否为私聊
+        if not event.is_private_chat():
+            return
+
         # 检查是否有正在进行的对话
         current_user_id = self.session_manager.get_user_by_servicer(sender_id)
         if current_user_id:
@@ -588,7 +600,11 @@ class HumanServicePlugin(Star):
     async def show_help(self, event: AiocqhttpMessageEvent):
         sender_id = event.get_sender_id()
         is_servicer = sender_id in self.servicers_id
-        
+
+        # 客服命令仅限私聊使用
+        if is_servicer and not event.is_private_chat():
+            return
+
         # 准备配置字典
         config = {
             "servicers_count": len(self.servicers_id),
@@ -621,7 +637,11 @@ class HumanServicePlugin(Star):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
             return
-        
+
+        # 检查是否为私聊
+        if not event.is_private_chat():
+            return
+
         # 检查是否启用了翻译
         if not self.enable_translation:
             yield event.plain_result("⚠ 智能翻译功能未启用\n请在插件配置中开启 enable_translation")
@@ -679,7 +699,11 @@ class HumanServicePlugin(Star):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
             return
-        
+
+        # 检查是否为私聊
+        if not event.is_private_chat():
+            return
+
         # 如果是共用黑名单或单客服
         if self.share_blacklist or len(self.servicers_id) == 1:
             # 直接显示黑名单
@@ -714,7 +738,11 @@ class HumanServicePlugin(Star):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
             return
-        
+
+        # 检查是否为私聊
+        if not event.is_private_chat():
+            return
+
         # 获取命令参数（AstrBot会自动移除命令部分）
         # 尝试多种方式获取参数
         message_text = event.message_str.strip()
@@ -748,6 +776,10 @@ class HumanServicePlugin(Star):
     async def accept_conversation(self, event: AiocqhttpMessageEvent, _=None):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
+            return
+
+        # 检查是否为私聊
+        if not event.is_private_chat():
             return
 
         # 从消息文本解析参数
@@ -816,6 +848,10 @@ class HumanServicePlugin(Star):
         if sender_id not in self.servicers_id:
             return
 
+        # 检查是否为私聊
+        if not event.is_private_chat():
+            return
+
         # 从消息文本解析参数
         message_text = event.message_str.strip()
         target_id = None
@@ -861,7 +897,11 @@ class HumanServicePlugin(Star):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
             return
-        
+
+        # 检查是否为私聊
+        if not event.is_private_chat():
+            return
+
         if not self.enable_chat_history:
             yield event.plain_result("⚠ 聊天记录功能未启用")
             return
@@ -891,6 +931,10 @@ class HumanServicePlugin(Star):
     async def end_conversation(self, event: AiocqhttpMessageEvent):
         sender_id = event.get_sender_id()
         if sender_id not in self.servicers_id:
+            return
+
+        # 检查是否为私聊
+        if not event.is_private_chat():
             return
 
         # 查找客服正在服务的用户
