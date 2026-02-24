@@ -345,7 +345,15 @@ class HumanServicePlugin(Star):
                 if self.servicer_status_manager.is_online(target_servicer):
                     await self.send(
                         event,
-                        message=f"📋 {send_name}({sender_id}) 已加入排队，当前队列：{queue_count} 人",
+                        message=(
+                            f"📋 {send_name}({sender_id}) 已加入排队，当前队列：{queue_count} 人\n"
+                            f"━━━━━━━━━━━━\n"
+                            f"常用指令：\n"
+                            f"/接入对话 {sender_id}\n"
+                            f"/结束对话\n"
+                            f"/上线\n"
+                            f"/下线"
+                        ),
                         user_id=target_servicer,
                     )
                 else:
@@ -373,7 +381,15 @@ class HumanServicePlugin(Star):
                     if self.servicer_status_manager.is_online(servicer_id):
                         await self.send(
                             event,
-                            message=f"{send_name}({sender_id}) 请求转人工",
+                            message=(
+                                f"{send_name}({sender_id}) 请求转人工\n"
+                                f"━━━━━━━━━━━━\n"
+                                f"常用指令：\n"
+                                f"/接入对话 {sender_id}\n"
+                                f"/结束对话\n"
+                                f"/上线\n"
+                                f"/下线"
+                            ),
                             user_id=servicer_id,
                         )
                     else:
