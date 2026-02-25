@@ -19,16 +19,16 @@ class HelpTextBuilder:
             str: 用户帮助文档
         """
         help_text = "📖 人工客服插件 - 使用帮助\n" + "="*35 + "\n\n"
-        help_text += "• /转人工\n  请求转接人工客服，如有多个客服可选择\n\n"
-        help_text += "• /转人机\n  取消转人工请求或结束对话\n\n"
-        help_text += "• /取消排队\n  退出排队队列\n\n"
-        help_text += "• /排队状态\n  查看当前排队位置和人数\n\n"
-        help_text += "• /kfhelp\n  显示此帮助信息\n\n"
-        
+        help_text += "• #转人工\n  请求转接人工客服，如有多个客服可选择\n\n"
+        help_text += "• #转人机\n  取消转人工请求或结束对话\n\n"
+        help_text += "• #取消排队\n  退出排队队列\n\n"
+        help_text += "• #排队状态\n  查看当前排队位置和人数\n\n"
+        help_text += "• #kfhelp\n  显示此帮助信息\n\n"
+
         help_text += "💡 提示：\n"
         help_text += "━"*35 + "\n"
         help_text += "• 客服忙碌时会自动加入排队\n"
-        help_text += "• 可随时使用 /转人机 取消\n"
+        help_text += "• 可随时使用 #转人机 取消\n"
         
         if config.get("conversation_timeout", 0) > 0:
             help_text += f"• 对话限时 {config['conversation_timeout']} 秒\n"
@@ -51,29 +51,29 @@ class HelpTextBuilder:
         help_text = "📖 人工客服插件 - 帮助文档\n" + "="*35 + "\n\n"
         help_text += "👤 用户命令：\n"
         help_text += "━"*35 + "\n"
-        help_text += "• /转人工\n  请求转接人工客服\n\n"
-        help_text += "• /转人机\n  取消转人工或结束对话\n\n"
-        help_text += "• /取消排队\n  退出排队队列\n\n"
-        help_text += "• /排队状态\n  查看当前排队位置\n\n"
-        
+        help_text += "• #转人工\n  请求转接人工客服\n\n"
+        help_text += "• #转人机\n  取消转人工或结束对话\n\n"
+        help_text += "• #取消排队\n  退出排队队列\n\n"
+        help_text += "• #排队状态\n  查看当前排队位置\n\n"
+
         help_text += "\n👨‍💼 客服命令：\n"
         help_text += "━"*35 + "\n"
-        help_text += "• /接入对话\n  接入用户对话（回复用户消息）\n\n"
-        help_text += "• /拒绝接入\n  拒绝用户接入请求\n\n"
-        help_text += "• /结束对话\n  结束当前对话\n\n"
-        help_text += "• /上线\n  设置为在线状态（接收用户请求）\n\n"
-        help_text += "• /下线\n  设置为离线状态（不接收新请求）\n\n"
-        help_text += "• /拉黑 QQ号\n  拉黑指定用户\n  示例：/拉黑 123456\n\n"
-        help_text += "• /取消拉黑 QQ号\n  取消拉黑指定用户\n  示例：/取消拉黑 123456\n\n"
-        help_text += "• /查看黑名单\n  查看黑名单列表\n\n"
-        
+        help_text += "• #接入对话\n  接入用户对话（回复用户消息）\n\n"
+        help_text += "• #拒绝接入\n  拒绝用户接入请求\n\n"
+        help_text += "• #结束对话\n  结束当前对话\n\n"
+        help_text += "• #上线\n  设置为在线状态（接收用户请求）\n\n"
+        help_text += "• #下线\n  设置为离线状态（不接收新请求）\n\n"
+        help_text += "• #拉黑 QQ号\n  拉黑指定用户\n  示例：#拉黑 123456\n\n"
+        help_text += "• #取消拉黑 QQ号\n  取消拉黑指定用户\n  示例：#取消拉黑 123456\n\n"
+        help_text += "• #查看黑名单\n  查看黑名单列表\n\n"
+
         if config.get("enable_translation"):
-            help_text += "• /翻译测试\n  测试翻译功能是否正常\n\n"
-        
+            help_text += "• #翻译测试\n  测试翻译功能是否正常\n\n"
+
         if config.get("enable_chat_history"):
-            help_text += "• /导出记录\n  导出当前会话聊天记录\n\n"
-        
-        help_text += "• /kfhelp\n  显示此帮助信息\n\n"
+            help_text += "• #导出记录\n  导出当前会话聊天记录\n\n"
+
+        help_text += "• #kfhelp\n  显示此帮助信息\n\n"
         
         # 添加配置信息
         help_text += "\n⚙️ 当前配置：\n"

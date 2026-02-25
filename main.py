@@ -332,14 +332,14 @@ class HumanServicePlugin(Star):
                         f"目前没有客服在线哦\n"
                         f"您已加入等待队列，当前排队人数：{queue_count}\n"
                         f"您的位置：第 {position} 位\n\n"
-                        f"💡 使用 /取消排队 可退出队列"
+                        f"💡 使用 #取消排队 可退出队列"
                     )
                 else:
                     yield event.plain_result(
                         f"客服正在服务中🔴\n"
                         f"您已加入等待队列，当前排队人数：{queue_count}\n"
                         f"您的位置：第 {position} 位\n\n"
-                        f"💡 使用 /取消排队 可退出队列"
+                        f"💡 使用 #取消排队 可退出队列"
                     )
 
                 # 检查客服是否在线，离线则累积通知
@@ -350,10 +350,10 @@ class HumanServicePlugin(Star):
                             f"📋 {send_name}({sender_id}) 已加入排队，当前队列：{queue_count} 人\n"
                             f"━━━━━━━━━━━━\n"
                             f"常用指令：\n"
-                            f"/接入对话 {sender_id}\n"
-                            f"/结束对话\n"
-                            f"/上线\n"
-                            f"/下线"
+                            f"#接入对话 {sender_id}\n"
+                            f"#结束对话\n"
+                            f"#上线\n"
+                            f"#下线"
                         ),
                         user_id=target_servicer,
                     )
@@ -387,10 +387,10 @@ class HumanServicePlugin(Star):
                                 f"{send_name}({sender_id}) 请求转人工\n"
                                 f"━━━━━━━━━━━━\n"
                                 f"常用指令：\n"
-                                f"/接入对话 {sender_id}\n"
-                                f"/结束对话\n"
-                                f"/上线\n"
-                                f"/下线"
+                                f"#接入对话 {sender_id}\n"
+                                f"#结束对话\n"
+                                f"#上线\n"
+                                f"#下线"
                             ),
                             user_id=servicer_id,
                         )
@@ -499,8 +499,8 @@ class HumanServicePlugin(Star):
         message_text = event.message_str.strip()
         
         # 如果消息还包含命令本身，移除它
-        if message_text.startswith("/拉黑"):
-            target_id = message_text.replace("/拉黑", "", 1).strip()
+        if message_text.startswith("#拉黑"):
+            target_id = message_text.replace("#拉黑", "", 1).strip()
         elif message_text.startswith("拉黑"):
             target_id = message_text.replace("拉黑", "", 1).strip()
         else:
@@ -509,7 +509,7 @@ class HumanServicePlugin(Star):
         
         # 验证QQ号格式
         if not target_id or not target_id.isdigit():
-            yield event.plain_result("⚠ 请提供正确的QQ号\n使用格式：/拉黑 QQ号\n示例：/拉黑 123456")
+            yield event.plain_result("⚠ 请提供正确的QQ号\n使用格式：#拉黑 QQ号\n示例：#拉黑 123456")
             return
         
         # 添加到黑名单
@@ -565,7 +565,7 @@ class HumanServicePlugin(Star):
                         f"✅ 您已上线，当前有 {queue_count} 人在排队\n"
                         f"💡 离线期间有 {len(pending)} 条未处理请求\n\n"
                         f"排队用户列表：\n{user_list}\n\n"
-                        f"使用 /接入对话 <QQ号> 接入用户"
+                        f"使用 #接入对话 <QQ号> 接入用户"
                     )
                 else:
                     yield event.plain_result(
@@ -766,8 +766,8 @@ class HumanServicePlugin(Star):
         message_text = event.message_str.strip()
         
         # 如果消息还包含命令本身，移除它
-        if message_text.startswith("/取消拉黑"):
-            target_id = message_text.replace("/取消拉黑", "", 1).strip()
+        if message_text.startswith("#取消拉黑"):
+            target_id = message_text.replace("#取消拉黑", "", 1).strip()
         elif message_text.startswith("取消拉黑"):
             target_id = message_text.replace("取消拉黑", "", 1).strip()
         else:
@@ -776,7 +776,7 @@ class HumanServicePlugin(Star):
         
         # 验证QQ号格式
         if not target_id or not target_id.isdigit():
-            yield event.plain_result("⚠ 请提供正确的QQ号\n使用格式：/取消拉黑 QQ号\n示例：/取消拉黑 123456")
+            yield event.plain_result("⚠ 请提供正确的QQ号\n使用格式：#取消拉黑 QQ号\n示例：#取消拉黑 123456")
             return
         
         # 从黑名单移除
@@ -805,8 +805,8 @@ class HumanServicePlugin(Star):
         target_id = None
 
         # 尝试提取命令后的参数
-        if message_text.startswith("/接入对话"):
-            target_id = message_text.replace("/接入对话", "", 1).strip()
+        if message_text.startswith("#接入对话"):
+            target_id = message_text.replace("#接入对话", "", 1).strip()
         elif message_text.startswith("接入对话"):
             target_id = message_text.replace("接入对话", "", 1).strip()
 
@@ -854,7 +854,7 @@ class HumanServicePlugin(Star):
         
         tips = "好的，接下来我将转发你的消息给对方，请开始对话："
         if self.enable_chat_history:
-            tips += "\n💡 提示：可使用 /导出记录 命令导出聊天记录"
+            tips += "\n💡 提示：可使用 #导出记录 命令导出聊天记录"
         if self.conversation_timeout > 0:
             tips += f"\n⏰ 对话限时 {self.conversation_timeout} 秒"
         yield event.plain_result(tips)
@@ -875,8 +875,8 @@ class HumanServicePlugin(Star):
         target_id = None
 
         # 尝试提取命令后的参数
-        if message_text.startswith("/拒绝接入"):
-            target_id = message_text.replace("/拒绝接入", "", 1).strip()
+        if message_text.startswith("#拒绝接入"):
+            target_id = message_text.replace("#拒绝接入", "", 1).strip()
         elif message_text.startswith("拒绝接入"):
             target_id = message_text.replace("拒绝接入", "", 1).strip()
 
