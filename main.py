@@ -376,7 +376,11 @@ class HumanServicePlugin(Star):
                     "group_id": group_id,
                     "user_name": send_name,
                 })
-                yield event.plain_result("正在等待客服👤接入...")
+                yield event.plain_result(
+                    "正在等待客服👤接入...\n"
+                    "━━━━━━━━━━━━\n"
+                    "如需取消，请发送 #转人机"
+                )
                 for servicer_id in self.servicers_id:
                     # 只通知在线客服，离线客服的消息累积到上线时发送
                     if self.servicer_status_manager.is_online(servicer_id):
