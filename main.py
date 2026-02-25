@@ -1046,7 +1046,7 @@ class HumanServicePlugin(Star):
                 # 用户 -> 客服
                 sender_name = event.get_sender_name()
                 servicer_name = self.get_servicer_name(servicer_id)
-                identifier_prefix = f"用户【{sender_name}】对客服【{servicer_name}】说:"
+                identifier_prefix = f"用户【{sender_name}】对你说：\n"
 
             if identifier_prefix:
                 ob_message = add_prefix_to_message(ob_message, identifier_prefix)
