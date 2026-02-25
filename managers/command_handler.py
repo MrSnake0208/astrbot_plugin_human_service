@@ -33,7 +33,7 @@ class CommandHandler:
             return False, "⚠ 您已在等待接入或正在对话", None
         
         # 检查是否在选择客服
-        if sender_id in self.plugin.session_manager.selection_map:
+        if sender_id in self.plugin.selection_map:
             return False, "⚠ 您正在选择客服，请先完成选择", None
         
         # 检查是否已在队列中
