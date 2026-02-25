@@ -12,8 +12,6 @@ class SessionManager:
         """初始化会话管理器"""
         # 会话映射：{user_id: {servicer_id, status, group_id, ...}}
         self.session_map: Dict[str, Dict] = {}
-        # 用户选择客服的临时状态
-        self.selection_map: Dict[str, Dict] = {}
         # 查看黑名单时的临时选择状态
         self.blacklist_view_selection: Dict[str, Dict] = {}
     

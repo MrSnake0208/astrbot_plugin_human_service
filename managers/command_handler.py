@@ -123,7 +123,7 @@ class CommandHandler:
         selected_servicer_name = self.plugin.get_servicer_name(selected_servicer_id)
         
         # 删除选择状态
-        del self.plugin.session_manager.selection_map[sender_id]
+        del self.plugin.selection_map[sender_id]
         
         success, should_stop, message, is_busy = await self._handle_selected_servicer(
             event, sender_id, selection, 
