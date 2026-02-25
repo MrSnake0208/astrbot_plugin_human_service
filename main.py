@@ -1,4 +1,5 @@
 import re
+from typing import Dict
 from astrbot.api.event import filter
 from astrbot.api.star import Context, Star, register
 from astrbot.core.config.astrbot_config import AstrBotConfig
@@ -119,9 +120,12 @@ class HumanServicePlugin(Star):
 
         # 消息路由器
         self.message_router = MessageRouter(self)
-        
+
         # 聊天记录：{user_id: [{"sender": "user/servicer", "name": "xxx", "message": "xxx", "time": "xxx"}]}
         self.chat_history = {}
+
+        # 用户选择客服的临时状态
+        self.selection_map: Dict[str, Dict] = {}
     
     def get_servicer_name(self, servicer_id: str) -> str:
         """获取客服名称，如果没有配置则返回QQ号"""
@@ -132,12 +136,7 @@ class HumanServicePlugin(Star):
     def session_map(self):
         """访问会话映射（兼容旧代码）"""
         return self.session_manager.session_map
-    
-    @property
-    def selection_map(self):
-        """访问选择映射（兼容旧代码）"""
-        return self.session_manager.selection_map
-    
+
     @property
     def blacklist_view_selection(self):
         """访问黑名单查看选择（兼容旧代码）"""
