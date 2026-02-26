@@ -313,7 +313,9 @@ class HumanServicePlugin(Star):
             
             servicer_list = "\n".join(servicer_list_items)
             yield event.plain_result(
-                f"请选择要对接的客服（回复序号）：\n{servicer_list}\n\n回复 0 取消请求"
+                f"‼️ 请确保您已经阅读过使用手册https://doc.maayuan.top/且未找到解决方法\n"
+                f"****\n"
+                f"🔘 请选择要对接的客服（回复序号）：\n{servicer_list}\n\n回复 0 取消请求"
             )
         else:
             # 单客服模式
