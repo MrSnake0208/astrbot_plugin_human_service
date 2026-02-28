@@ -314,6 +314,7 @@ class HumanServicePlugin(Star):
             servicer_list = "\n".join(servicer_list_items)
             yield event.plain_result(
                 f"‼️ 请确保您已经阅读过使用手册https://doc.maayuan.top/且未找到解决方法\n"
+                f"如需远程协助请使用UU远程，打开后点击“复制并分享”，选择客服(嘶嘶嘶)只有该客服可以哦，将信息发给客服，根据指引继续\n"
                 f"****\n"
                 f"🔘 请选择要对接的客服（回复序号）：\n{servicer_list}\n\n回复 0 取消请求"
             )

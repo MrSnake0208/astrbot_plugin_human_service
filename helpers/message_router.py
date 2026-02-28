@@ -2,8 +2,24 @@
 消息路由器
 负责处理消息转发和路由逻辑
 """
+import logging
 from datetime import datetime
 from .blacklist_formatter import BlacklistFormatter
+
+logger = logging.getLogger(__name__)
+
+# UU 远程关键词检测
+UU_REMOTE_KEYWORDS = [
+    "网易UU远程",
+    "设备ID",
+    "设备验证码",
+    "uuyc.163.com"
+]
+
+
+def contains_uu_remote_info(text: str) -> bool:
+    """检测是否包含 UU 远程协助信息"""
+    return any(keyword in text for keyword in UU_REMOTE_KEYWORDS)
 
 
 class MessageRouter:
@@ -137,8 +153,50 @@ class MessageRouter:
                 reply_identifier=True,
                 servicer_id=session["servicer_id"],
             )
+
+            # 检测并撤回 UU 远程信息（仅在群聊中）
+            await self._try_delete_uu_remote_message(event, sender_id)
+
             event.stop_event()
             return True
 
         return False
+
+    async def _try_delete_uu_remote_message(self, event, sender_id: str):
+        """
+        尝试撤回包含 UU 远程信息的消息
+
+        Args:
+            event: 消息事件
+            sender_id: 发送者 ID
+        """
+        # 仅在群聊中撤回
+        group_id = event.get_group_id()
+        if not group_id or str(group_id) == "0":
+            return
+
+        # 检测是否包含 UU 远程信息
+        message_text = event.message_str
+        if not contains_uu_remote_info(message_text):
+            return
+
+        try:
+            # 获取消息 ID
+            message_id = None
+            if hasattr(event, "message_obj") and hasattr(event.message_obj, "message_id"):
+                message_id = event.message_obj.message_id
+            elif hasattr(event, "raw_event") and isinstance(event.raw_event, dict):
+                message_id = event.raw_event.get("message_id")
+
+            if not message_id:
+                logger.warning(f"无法获取消息 ID，无法撤回 UU 远程信息 (用户: {sender_id})")
+                return
+
+            # 调用撤回 API
+            await event.bot.delete_msg(message_id=int(message_id))
+            logger.info(f"已撤回用户 {sender_id} 的 UU 远程信息")
+
+        except Exception as e:
+            # 记录日志，但不影响正常转发流程
+            logger.warning(f"撤回 UU 远程信息失败: {e}")
 
