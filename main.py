@@ -313,8 +313,9 @@ class HumanServicePlugin(Star):
             
             servicer_list = "\n".join(servicer_list_items)
             yield event.plain_result(
-                f"‼️ 请确保您已经阅读过使用手册https://doc.maayuan.top/且未找到解决方法\n"
-                f"如需远程协助请使用UU远程，打开后点击“复制并分享”，选择客服(嘶嘶嘶)只有该客服可以哦，将信息发给客服，根据指引继续\n"
+                f"‼️ 请【先】确保您已经阅读过使用手册https://doc.maayuan.top/且未找到解决方法。\n"
+                f"1️⃣远程协助专线→推荐使用【UU远程】，打开UU远程后点击“复制并分享”，并选择【嘶嘶嘶】客服👈只有该客服可以哦，将UU远程信息发给客服后，根据客服指引继续。\n"
+                f"2️⃣直播活动专线→1V1高效解决您的各类问题，活动详情请前往小红书http://xhslink.com/o/6hlY29jfSwp查看，报名请选择【嘬嘬嘬】客服👈只有该客服可以哦，把您的问题告知客服，根据客服指引继续。\n"
                 f"****\n"
                 f"🔘 请选择要对接的客服（回复序号）：\n{servicer_list}\n\n回复 0 取消请求"
             )
